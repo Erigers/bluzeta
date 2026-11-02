@@ -50,6 +50,7 @@ export default async function ProfilePage() {
                   </Link>
                   <p className="text-sm text-muted">
                     {item.status === "sold" ? t.sold : t.active} · {item.likesCount} {t.likesCount}
+                    {item.isMockup ? ` · ${t.mockup}` : ""}
                   </p>
                   {item.status !== "sold" ? <MarkSoldButton listingId={item.id} /> : null}
                 </div>

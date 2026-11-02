@@ -21,6 +21,7 @@ export type PublicListing = {
   images: string[];
   likesCount: number;
   status: string;
+  isMockup: boolean;
   createdAt: Date;
   liked: boolean;
   distanceKm: number | null;
@@ -28,6 +29,14 @@ export type PublicListing = {
 };
 
 type ViewerCoords = { lat: number; lng: number } | null;
+
+export function listingIsMockup(row: {
+  isMockup?: boolean | null;
+  images: string[] | null;
+}) {
+  if (row.isMockup) return true;
+  return (row.images ?? []).some((src) => src.includes("images.unsplash.com"));
+}
 
 function toPublic(
   row: typeof listing.$inferSelect & { sellerLat?: number; sellerLng?: number },
@@ -53,6 +62,7 @@ function toPublic(
     images: row.images,
     likesCount: row.likesCount,
     status: row.status,
+    isMockup: listingIsMockup(row),
     createdAt: row.createdAt,
     liked: likedIds.has(row.id),
     distanceKm,
@@ -222,6 +232,7 @@ export async function getMostLikedListings(limit = 10) {
       id: listing.id,
       title: listing.title,
       images: listing.images,
+      isMockup: listing.isMockup,
     })
     .from(listing)
     .innerJoin(profile, eq(profile.userId, listing.sellerId))
@@ -238,6 +249,7 @@ export async function getMostLikedListings(limit = 10) {
     id: row.id,
     image: row.images[0],
     title: row.title,
+    isMockup: listingIsMockup(row),
   }));
 }
 

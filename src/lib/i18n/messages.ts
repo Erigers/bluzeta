@@ -312,6 +312,7 @@ const sq = {
   scrollDown: "Lëviz poshtë",
   cashMeetup: "Cash",
   openInNewTab: "Hape në tab të ri",
+  mockup: "Mockup",
 };
 
 const en: typeof sq = {
@@ -613,6 +614,7 @@ const en: typeof sq = {
   scrollDown: "Scroll down",
   cashMeetup: "Cash",
   openInNewTab: "Open in new tab",
+  mockup: "Mockup",
 };
 
 const it: typeof sq = {
@@ -914,6 +916,7 @@ const it: typeof sq = {
   scrollDown: "Scorri giù",
   cashMeetup: "Contanti",
   openInNewTab: "Apri in una nuova scheda",
+  mockup: "Mockup",
 };
 
 const tr: typeof sq = {
@@ -1215,6 +1218,7 @@ const tr: typeof sq = {
   scrollDown: "Aşağı kaydır",
   cashMeetup: "Nakit",
   openInNewTab: "Yeni sekmede aç",
+  mockup: "Mockup",
 };
 
 export const messages = { sq, en, it, tr } as const;

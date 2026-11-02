@@ -18,6 +18,7 @@ export type CollectionItem = {
   id: string;
   image: string;
   title: string;
+  isMockup?: boolean;
 };
 
 export type CollectionSurferVariant = "magnetic" | "uplift" | "simple";
@@ -209,9 +210,19 @@ function SurfCard({
         }
       }}
     >
-      <span className="absolute top-3 left-3 z-10 font-[family-name:var(--font-display)] text-sm font-bold text-white/80">
-        {String((index % count) + 1).padStart(2, "0")}
-      </span>
+      <div className="absolute top-3 left-3 z-10 flex flex-col items-start gap-1.5">
+        <span className="font-[family-name:var(--font-display)] text-sm font-bold text-white/80">
+          {String((index % count) + 1).padStart(2, "0")}
+        </span>
+        {item.isMockup ? (
+          <span
+            aria-hidden="true"
+            className="rounded-full bg-black/75 px-2 py-[0.28rem] text-[10px] font-semibold tracking-[0.16em] text-white uppercase"
+          >
+            {t.mockup}
+          </span>
+        ) : null}
+      </div>
       <a
         href={href}
         target="_blank"

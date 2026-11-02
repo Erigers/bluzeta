@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { LikeButton } from "@/components/like-button";
+import { MockupBadge } from "@/components/mockup-badge";
 import type { PublicListing } from "@/lib/data";
 import type { Messages } from "@/lib/i18n/messages";
 import { subcategoryLabel } from "@/lib/labels";
@@ -22,7 +23,7 @@ export function ListingCard({
   return (
     <article className="listing-card">
       <Link href={`/item/${item.id}`} className="block">
-        <div className="card-media aspect-[4/5]">
+        <div className="card-media relative aspect-[4/5]">
           {image ? (
             <Image
               src={image}
@@ -32,6 +33,7 @@ export function ListingCard({
               className="h-full w-full object-cover"
             />
           ) : null}
+          {item.isMockup ? <MockupBadge label={t.mockup} /> : null}
         </div>
       </Link>
       <div className="mt-3 flex items-start justify-between gap-3">

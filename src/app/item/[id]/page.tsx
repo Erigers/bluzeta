@@ -2,6 +2,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { InterestedButton } from "@/components/interested-button";
 import { LikeButton } from "@/components/like-button";
+import { MockupBadge } from "@/components/mockup-badge";
 import { getPublicListing } from "@/lib/data";
 import { getT } from "@/lib/i18n/locale";
 import { categoryLabel, colorLabel, subcategoryLabel } from "@/lib/labels";
@@ -31,16 +32,19 @@ export default async function ItemPage({
   return (
     <article className="grid gap-8 md:grid-cols-[1.1fr_0.9fr]">
       <div className="grid gap-3">
-        {item.images.map((src) => (
-          <div key={src} className="card-media overflow-hidden">
+        {item.images.map((src, index) => (
+          <div key={src} className="card-media relative overflow-hidden">
             <Image
               src={src}
               alt={item.title}
               width={1200}
               height={1500}
               className="h-auto w-full object-cover"
-              priority
+              priority={index === 0}
             />
+            {item.isMockup && index === 0 ? (
+              <MockupBadge label={t.mockup} />
+            ) : null}
           </div>
         ))}
       </div>
@@ -56,6 +60,11 @@ export default async function ItemPage({
           {formatPrice(item.priceAll)} {t.lek}
         </p>
         <div className="mt-4 flex flex-wrap gap-2 text-sm">
+          {item.isMockup ? (
+            <span className="chip" data-active="true">
+              {t.mockup}
+            </span>
+          ) : null}
           <span className="chip" data-active="true">
             {t.conditions[item.condition as keyof typeof t.conditions]}
           </span>

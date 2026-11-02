@@ -207,6 +207,7 @@ textarea {
 }
 
 .card-media {
+  position: relative;
   overflow: hidden;
   border-radius: 1.2rem;
   background: var(--line);

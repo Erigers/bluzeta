@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { hashPassword } from "better-auth/crypto";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { getDb } from "../src/lib/db";
 import { account, listing, profile, user } from "../src/lib/db/schema";
 import { legacyCategoryMap } from "../src/lib/constants";
@@ -427,9 +427,20 @@ async function main() {
         condition: item.condition,
         size: item.size,
         images: [...item.images],
+        isMockup: true,
       })),
     );
   }
+
+  await db
+    .update(listing)
+    .set({ isMockup: true })
+    .where(
+      inArray(
+        listing.title,
+        items.map((item) => item.title),
+      ),
+    );
 
   console.log("Seed complete. Demo logins: ana@bluzeta.al / lira@bluzeta.al / arben@bluzeta.al");
 }

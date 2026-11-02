@@ -106,6 +106,7 @@ export const listing = pgTable(
     images: text("images").array().notNull(),
     likesCount: integer("likes_count").notNull().default(0),
     status: text("status").notNull().default("active"),
+    isMockup: boolean("is_mockup").notNull().default(false),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [
