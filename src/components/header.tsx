@@ -4,7 +4,13 @@ import { SearchBar, SearchBarFallback } from "@/components/search-bar";
 import Link from "next/link";
 import { Suspense } from "react";
 
-export function Header({ signedIn }: { signedIn: boolean }) {
+export function Header({
+  signedIn,
+  isAdmin = false,
+}: {
+  signedIn: boolean;
+  isAdmin?: boolean;
+}) {
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-background/85 backdrop-blur">
       <div className="mx-auto grid min-h-[var(--header-h)] max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 px-4 py-3 md:flex md:gap-4 md:py-0">
@@ -17,7 +23,7 @@ export function Header({ signedIn }: { signedIn: boolean }) {
           </Suspense>
         </div>
         <div className="col-start-2 row-start-1 md:order-3">
-          <NavDrawer signedIn={signedIn} />
+          <NavDrawer signedIn={signedIn} isAdmin={isAdmin} />
         </div>
       </div>
     </header>

@@ -11,12 +11,14 @@ export function InterestedButton({
   onboarded,
   isOwner,
   initialStatus,
+  sold,
 }: {
   listingId: string;
   signedIn: boolean;
   onboarded: boolean;
   isOwner: boolean;
   initialStatus: string | null;
+  sold?: boolean;
 }) {
   const { t } = useT();
   const router = useRouter();
@@ -28,9 +30,25 @@ export function InterestedButton({
   }
 
   if (status) {
+    const label =
+      status === "pending"
+        ? t.interestSent
+        : status === "accepted"
+          ? t.sellerChoseYou
+          : status === "declined"
+            ? t.interestDeclined
+            : t.alreadyInterested;
     return (
       <p className="rounded-full bg-blue-soft px-4 py-3 text-center font-medium text-blue">
-        {status === "pending" ? t.interestSent : t.alreadyInterested}
+        {label}
+      </p>
+    );
+  }
+
+  if (sold) {
+    return (
+      <p className="rounded-full bg-blue-soft px-4 py-3 text-center font-medium text-blue">
+        {t.sold}
       </p>
     );
   }

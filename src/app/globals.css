@@ -191,6 +191,56 @@ textarea {
   border-color: var(--tangerine);
 }
 
+.score-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 1.75rem;
+  background: transparent;
+  cursor: pointer;
+}
+
+.score-range:disabled {
+  cursor: default;
+}
+
+.score-range::-webkit-slider-runnable-track {
+  height: 0.45rem;
+  background: transparent;
+  border-radius: 999px;
+}
+
+.score-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: -0.32rem;
+  border-radius: 999px;
+  border: 2px solid var(--card);
+  background: var(--blue);
+  box-shadow: 0 2px 8px rgba(30, 78, 255, 0.35);
+  transition: transform 0.15s ease;
+}
+
+.score-range:not(:disabled)::-webkit-slider-thumb:hover {
+  transform: scale(1.12);
+}
+
+.score-range::-moz-range-track {
+  height: 0.45rem;
+  background: transparent;
+  border-radius: 999px;
+}
+
+.score-range::-moz-range-thumb {
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid var(--card);
+  border-radius: 999px;
+  background: var(--blue);
+  box-shadow: 0 2px 8px rgba(30, 78, 255, 0.35);
+}
+
 .chip {
   display: inline-flex;
   align-items: center;
@@ -226,6 +276,11 @@ textarea {
 
 .listing-card:hover .card-media img {
   transform: scale(1.04);
+}
+
+.admin-row {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 7.5rem;
 }
 
 .heart-icon {

@@ -1,6 +1,6 @@
 "use client";
 
-import { X } from "lucide-react";
+import { Shield } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
@@ -11,7 +11,13 @@ import { SignOutButton } from "@/components/sign-out-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useT } from "@/components/i18n-provider";
 
-export function NavDrawer({ signedIn }: { signedIn: boolean }) {
+export function NavDrawer({
+  signedIn,
+  isAdmin = false,
+}: {
+  signedIn: boolean;
+  isAdmin?: boolean;
+}) {
   const { t } = useT();
   const path = usePathname();
   const [open, setOpen] = useState(false);
@@ -113,11 +119,14 @@ export function NavDrawer({ signedIn }: { signedIn: boolean }) {
             <button
               ref={closeRef}
               type="button"
-              className="grid h-10 w-10 place-items-center rounded-full border border-line"
+              className="group relative grid h-11 w-11 place-items-center rounded-full border border-transparent text-muted transition-all duration-200 hover:scale-105 hover:border-line hover:bg-card hover:text-foreground active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue/35"
               aria-label={t.closeMenu}
               onClick={() => setOpen(false)}
             >
-              <X size={20} strokeWidth={1.75} />
+              <span className="relative block size-[14px]" aria-hidden>
+                <span className="absolute inset-x-0 top-1/2 h-[2px] -translate-y-1/2 rotate-45 rounded-full bg-current transition-transform duration-300 ease-out group-hover:rotate-[135deg]" />
+                <span className="absolute inset-x-0 top-1/2 h-[2px] -translate-y-1/2 -rotate-45 rounded-full bg-current transition-transform duration-300 ease-out group-hover:-rotate-[135deg]" />
+              </span>
             </button>
           </div>
 
@@ -138,6 +147,19 @@ export function NavDrawer({ signedIn }: { signedIn: boolean }) {
                 {item.label}
               </Link>
             ))}
+            {isAdmin ? (
+              <Link
+                href="/admin"
+                className={`mt-2 flex items-center gap-3 rounded-2xl px-3 py-3 text-lg ${
+                  path.startsWith("/admin")
+                    ? "bg-blue-soft text-blue"
+                    : "hover:bg-card"
+                }`}
+              >
+                <Shield size={22} strokeWidth={1.75} className="ml-2" />
+                {t.admin}
+              </Link>
+            ) : null}
             {signedIn ? (
               <div className="mt-4 px-1">
                 <SignOutButton />

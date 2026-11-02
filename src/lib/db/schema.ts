@@ -17,6 +17,10 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").notNull().default(false),
   image: text("image"),
+  role: text("role").notNull().default("user"),
+  banned: boolean("banned").notNull().default(false),
+  bannedAt: timestamp("banned_at"),
+  banReason: text("ban_reason"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -80,6 +84,7 @@ export const profile = pgTable("profile", {
   neighborhoodId: text("neighborhood_id").notNull(),
   lat: real("lat").notNull(),
   lng: real("lng").notNull(),
+  communicationScore: integer("communication_score").notNull().default(0),
   instagram: text("instagram"),
   facebook: text("facebook"),
   tiktok: text("tiktok"),
@@ -136,6 +141,37 @@ export const like = pgTable(
   ],
 );
 
+export const report = pgTable(
+  "report",
+  {
+    id: text("id").primaryKey(),
+    reporterId: text("reporter_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    targetUserId: text("target_user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    listingId: text("listing_id").references(() => listing.id, {
+      onDelete: "set null",
+    }),
+    reason: text("reason").notNull(),
+    details: text("details").notNull().default(""),
+    status: text("status").notNull().default("pending"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    resolvedAt: timestamp("resolved_at"),
+    resolvedBy: text("resolved_by").references(() => user.id, {
+      onDelete: "set null",
+    }),
+  },
+  (table) => [
+    index("report_status_idx").on(table.status),
+    index("report_created_idx").on(table.createdAt),
+    index("report_listing_idx").on(table.listingId),
+    index("report_target_idx").on(table.targetUserId),
+    index("report_reporter_idx").on(table.reporterId),
+  ],
+);
+
 export const interest = pgTable(
   "interest",
   {
@@ -150,6 +186,15 @@ export const interest = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     status: text("status").notNull().default("pending"),
+    rating: text("rating"),
+    feedback: text("feedback"),
+    ratedAt: timestamp("rated_at"),
+    buyerTrustScore: integer("buyer_trust_score"),
+    sellerTrustScore: integer("seller_trust_score"),
+    sellerFeedback: text("seller_feedback"),
+    sellerRatedAt: timestamp("seller_rated_at"),
+    sellerVerifiedAt: timestamp("seller_verified_at"),
+    buyerVerifiedAt: timestamp("buyer_verified_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [
@@ -165,6 +210,8 @@ export const userRelations = relations(user, ({ one, many }) => ({
   likes: many(like),
   interestsSent: many(interest, { relationName: "buyerInterests" }),
   interestsReceived: many(interest, { relationName: "sellerInterests" }),
+  reportsFiled: many(report, { relationName: "reporterReports" }),
+  reportsReceived: many(report, { relationName: "targetReports" }),
 }));
 
 export const profileRelations = relations(profile, ({ one }) => ({
@@ -175,6 +222,24 @@ export const listingRelations = relations(listing, ({ one, many }) => ({
   seller: one(user, { fields: [listing.sellerId], references: [user.id] }),
   likes: many(like),
   interests: many(interest),
+  reports: many(report),
+}));
+
+export const reportRelations = relations(report, ({ one }) => ({
+  reporter: one(user, {
+    fields: [report.reporterId],
+    references: [user.id],
+    relationName: "reporterReports",
+  }),
+  target: one(user, {
+    fields: [report.targetUserId],
+    references: [user.id],
+    relationName: "targetReports",
+  }),
+  listing: one(listing, {
+    fields: [report.listingId],
+    references: [listing.id],
+  }),
 }));
 
 export const likeRelations = relations(like, ({ one }) => ({

@@ -1,19 +1,34 @@
 import { randomUUID } from "crypto";
 import { hashPassword } from "better-auth/crypto";
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { getDb } from "../src/lib/db";
-import { account, listing, profile, user } from "../src/lib/db/schema";
+import { account, interest, listing, profile, report, user } from "../src/lib/db/schema";
 import { legacyCategoryMap } from "../src/lib/constants";
 
 const DEMO_PASSWORD = "bluzeta-demo";
 
 const people = [
   {
+    name: "Bluzeta Admin",
+    email: "admin@bluzeta.al",
+    role: "admin",
+    neighborhoodId: "qender",
+    lat: 41.3275,
+    lng: 19.8187,
+    communicationScore: 9200,
+    instagram: "bluzeta",
+    facebook: null as string | null,
+    tiktok: null as string | null,
+    whatsapp: "+355690000000",
+  },
+  {
     name: "Ana Hoxha",
     email: "ana@bluzeta.al",
+    role: "user",
     neighborhoodId: "blloku",
     lat: 41.3218,
     lng: 19.8165,
+    communicationScore: 7800,
     instagram: "ana.hoxha",
     facebook: null as string | null,
     tiktok: null as string | null,
@@ -22,9 +37,11 @@ const people = [
   {
     name: "Lira Meta",
     email: "lira@bluzeta.al",
+    role: "user",
     neighborhoodId: "komuna",
     lat: 41.3182,
     lng: 19.8042,
+    communicationScore: 6400,
     instagram: "lira.fits",
     facebook: null,
     tiktok: "lirafits",
@@ -33,9 +50,11 @@ const people = [
   {
     name: "Arben Dervishi",
     email: "arben@bluzeta.al",
+    role: "user",
     neighborhoodId: "lapraka",
     lat: 41.3412,
     lng: 19.794,
+    communicationScore: 5100,
     instagram: null,
     facebook: "arben.dervishi",
     tiktok: null,
@@ -355,6 +374,7 @@ async function main() {
         name: person.name,
         email: person.email,
         emailVerified: true,
+        role: person.role ?? "user",
         createdAt: now,
         updatedAt: now,
       });
@@ -369,12 +389,17 @@ async function main() {
       });
     }
     await db
+      .update(user)
+      .set({ role: person.role ?? "user" })
+      .where(eq(user.email, person.email));
+    await db
       .insert(profile)
       .values({
         userId,
         neighborhoodId: person.neighborhoodId,
         lat: person.lat,
         lng: person.lng,
+        communicationScore: person.communicationScore,
         instagram: person.instagram,
         facebook: person.facebook,
         tiktok: person.tiktok,
@@ -387,6 +412,7 @@ async function main() {
           neighborhoodId: person.neighborhoodId,
           lat: person.lat,
           lng: person.lng,
+          communicationScore: person.communicationScore,
           instagram: person.instagram,
           facebook: person.facebook,
           tiktok: person.tiktok,
@@ -442,7 +468,106 @@ async function main() {
       ),
     );
 
-  console.log("Seed complete. Demo logins: ana@bluzeta.al / lira@bluzeta.al / arben@bluzeta.al");
+  const listingsNow = await db
+    .select({
+      id: listing.id,
+      title: listing.title,
+      sellerId: listing.sellerId,
+    })
+    .from(listing);
+  const listingByTitle = new Map(listingsNow.map((row) => [row.title, row]));
+
+  async function ensureInterest(options: {
+    listingTitle: string;
+    buyerEmail: string;
+    status?: string;
+    rating?: "up" | "down" | null;
+    feedback?: string | null;
+    buyerTrustScore?: number | null;
+    sellerTrustScore?: number | null;
+    sellerFeedback?: string | null;
+  }) {
+    const item = listingByTitle.get(options.listingTitle);
+    const buyerId = idByEmail.get(options.buyerEmail);
+    if (!item || !buyerId || item.sellerId === buyerId) return;
+    const values = {
+      status: options.status ?? "pending",
+      rating: options.rating ?? null,
+      feedback: options.feedback ?? null,
+      ratedAt: options.rating ? new Date() : null,
+      buyerTrustScore: options.buyerTrustScore ?? null,
+      sellerTrustScore: options.sellerTrustScore ?? null,
+      sellerFeedback: options.sellerFeedback ?? null,
+      sellerRatedAt: options.sellerTrustScore != null ? new Date() : null,
+    };
+    const [existing] = await db
+      .select({ id: interest.id })
+      .from(interest)
+      .where(and(eq(interest.listingId, item.id), eq(interest.buyerId, buyerId)))
+      .limit(1);
+    if (existing) {
+      await db.update(interest).set(values).where(eq(interest.id, existing.id));
+      return;
+    }
+    await db.insert(interest).values({
+      id: randomUUID(),
+      listingId: item.id,
+      buyerId,
+      sellerId: item.sellerId,
+      ...values,
+    });
+  }
+
+  await ensureInterest({
+    listingTitle: "Xhaketë lëkure e zezë",
+    buyerEmail: "lira@bluzeta.al",
+  });
+  await ensureInterest({
+    listingTitle: "Xhaketë lëkure e zezë",
+    buyerEmail: "arben@bluzeta.al",
+  });
+  await ensureInterest({
+    listingTitle: "Nike Air Force 1",
+    buyerEmail: "lira@bluzeta.al",
+    status: "accepted",
+    rating: "up",
+    feedback: "Takimi në Bllok ishte i qetë, pagesa cash pa problem.",
+    buyerTrustScore: 9,
+    sellerTrustScore: 8,
+    sellerFeedback: "Shitësi erdhi në kohë dhe ishte korrekt.",
+  });
+  await ensureInterest({
+    listingTitle: "Xhinse blu Zara",
+    buyerEmail: "ana@bluzeta.al",
+  });
+
+  const [sampleListing] = await db
+    .select({ id: listing.id, sellerId: listing.sellerId })
+    .from(listing)
+    .where(eq(listing.title, "Xhaketë lëkure e zezë"))
+    .limit(1);
+  const liraId = idByEmail.get("lira@bluzeta.al");
+  if (sampleListing && liraId) {
+    const [existingReport] = await db
+      .select({ id: report.id })
+      .from(report)
+      .where(eq(report.listingId, sampleListing.id))
+      .limit(1);
+    if (!existingReport) {
+      await db.insert(report).values({
+        id: randomUUID(),
+        reporterId: liraId,
+        targetUserId: sampleListing.sellerId,
+        listingId: sampleListing.id,
+        reason: "fake",
+        details: "Foto duket e kopjuar.",
+      });
+    }
+  }
+
+  console.log(
+    "Seed complete. Demo logins: admin@bluzeta.al / ana@bluzeta.al / lira@bluzeta.al / arben@bluzeta.al (password: bluzeta-demo)",
+  );
 }
 
 main().catch((error) => {

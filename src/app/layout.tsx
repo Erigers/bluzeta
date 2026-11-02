@@ -3,7 +3,9 @@ import { Manrope } from "next/font/google";
 import localFont from "next/font/local";
 import { BottomNav } from "@/components/bottom-nav";
 import { Header } from "@/components/header";
+import { Logo } from "@/components/logo";
 import { Providers } from "@/components/providers";
+import { SignOutButton } from "@/components/sign-out-button";
 import { SiteFooter } from "@/components/site-footer";
 import { getMessages } from "@/lib/i18n/messages";
 import { getLocale } from "@/lib/i18n/locale";
@@ -61,12 +63,30 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full overflow-x-visible overflow-y-visible bg-background text-foreground antialiased">
         <Providers locale={locale} messages={t}>
-          <Header signedIn={Boolean(viewer)} />
-          <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-24 pt-6 md:pb-12">
-            {children}
-          </main>
-          <SiteFooter t={t} />
-          <BottomNav signedIn={Boolean(viewer)} />
+          {viewer?.banned ? (
+            <main className="mx-auto grid min-h-dvh max-w-lg place-content-center px-4 text-center">
+              <Logo size={80} />
+              <h1 className="mt-6 font-[family-name:var(--font-display)] text-4xl">
+                {t.bannedTitle}
+              </h1>
+              <p className="mt-3 text-muted">{t.bannedBody}</p>
+              <div className="mt-8 flex justify-center">
+                <SignOutButton />
+              </div>
+            </main>
+          ) : (
+            <>
+              <Header
+                signedIn={Boolean(viewer)}
+                isAdmin={Boolean(viewer?.isAdmin)}
+              />
+              <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-24 pt-6 md:pb-12">
+                {children}
+              </main>
+              <SiteFooter t={t} />
+              <BottomNav signedIn={Boolean(viewer)} />
+            </>
+          )}
         </Providers>
       </body>
     </html>

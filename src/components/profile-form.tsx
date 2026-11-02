@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useT } from "@/components/i18n-provider";
 import { MenuIcon } from "@/components/menu-icon";
+import { ScoreSlider } from "@/components/score-slider";
 import { neighborhoods } from "@/lib/constants";
 import { saveProfileAction } from "@/lib/actions";
 import { parseSocials, type SocialKind } from "@/lib/socials";
@@ -26,6 +27,8 @@ export function ProfileForm({
 }: {
   initial?: {
     neighborhoodId?: string;
+    communicationScore?: number | null;
+    trustScore?: number | null;
     instagram?: string | null;
     facebook?: string | null;
     tiktok?: string | null;
@@ -37,6 +40,9 @@ export function ProfileForm({
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<SocialKind, string>>>({});
   const [pending, setPending] = useState(false);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [communicationScore, setCommunicationScore] = useState(
+    initial?.communicationScore ?? 0,
+  );
 
   function messageFor(kind: SocialKind) {
     return t[INVALID_MESSAGE[kind]];
@@ -113,6 +119,32 @@ export function ProfileForm({
           <input type="hidden" name="lng" value={coords.lng} />
         </>
       ) : null}
+      <fieldset className="grid gap-4 rounded-2xl border border-line p-4">
+        <legend className="px-1 font-medium">{t.publicScores}</legend>
+        <p className="text-sm text-muted">{t.communicationScoreHint}</p>
+        <ScoreSlider
+          icon="communication"
+          label={t.communicationScore}
+          name="communicationScore"
+          value={communicationScore}
+          max={10000}
+          step={50}
+          onChange={setCommunicationScore}
+          formatValue={(value) => value.toLocaleString()}
+        />
+        <ScoreSlider
+          icon="trust"
+          label={t.trustScore}
+          value={initial?.trustScore ?? 0}
+          max={10}
+          step={0.1}
+          readOnly
+          formatValue={(value) =>
+            Number.isInteger(value) ? String(value) : value.toFixed(1)
+          }
+        />
+        <p className="text-sm text-muted">{t.trustScoreHint}</p>
+      </fieldset>
       <fieldset className="grid gap-4">
         <legend className="font-medium">{t.socials}</legend>
         <p className="text-sm text-muted">{t.socialsHint}</p>

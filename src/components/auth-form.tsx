@@ -33,10 +33,20 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
           });
     setPending(false);
     if (result.error) {
-      setError(mode === "sign-in" ? t.invalidCredentials : t.errorGeneric);
+      const banned =
+        result.error.code === "BANNED" || result.error.message === "BANNED";
+      setError(
+        banned
+          ? t.accountBanned
+          : mode === "sign-in"
+            ? t.invalidCredentials
+            : t.errorGeneric,
+      );
       return;
     }
-    window.location.href = mode === "sign-up" ? "/onboarding" : "/";
+    const next = new URLSearchParams(window.location.search).get("next");
+    const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+    window.location.href = mode === "sign-up" ? "/onboarding" : safeNext;
   }
 
   return (
@@ -61,6 +71,13 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
           autoComplete={mode === "sign-up" ? "new-password" : "current-password"}
         />
       </label>
+      {mode === "sign-in" ? (
+        <p className="-mt-2 text-right text-sm">
+          <Link className="text-blue" href="/forgot-password">
+            {t.forgotPassword}
+          </Link>
+        </p>
+      ) : null}
       {error ? <p className="text-sm text-tangerine">{error}</p> : null}
       <button className="btn btn-tangerine" disabled={pending}>
         {mode === "sign-up" ? t.signUp : t.signIn}

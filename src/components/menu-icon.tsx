@@ -15,7 +15,9 @@ export type MenuIconName =
   | "instagram"
   | "facebook"
   | "tiktok"
-  | "whatsapp";
+  | "whatsapp"
+  | "communication"
+  | "trust";
 
 export function MenuIcon({
   name,

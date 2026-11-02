@@ -240,3 +240,17 @@ export type NeighborhoodId = (typeof neighborhoods)[number]["id"];
 export function getNeighborhood(id: string) {
   return neighborhoods.find((n) => n.id === id) ?? neighborhoods[0];
 }
+
+export const reportReasons = [
+  "spam",
+  "prohibited",
+  "fake",
+  "offensive",
+  "other",
+] as const;
+
+export type ReportReason = (typeof reportReasons)[number];
+
+export function isReportReason(value: string): value is ReportReason {
+  return reportReasons.includes(value as ReportReason);
+}

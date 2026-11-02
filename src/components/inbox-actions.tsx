@@ -21,7 +21,7 @@ export function InboxActions({ id, status }: { id: string; status: string }) {
         disabled={pending}
         onClick={() => start(() => { void decideInterestAction(id, "accepted"); })}
       >
-        {t.accept}
+        {t.selectBuyer}
       </button>
       <button
         className="btn btn-ghost !py-2 text-sm"
