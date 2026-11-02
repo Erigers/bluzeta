@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="bz-body" x1="86" y1="52" x2="176" y2="208" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8BB4FF"/>
+      <stop offset="0.28" stop-color="#4C8CFF"/>
+      <stop offset="0.62" stop-color="#1E4EFF"/>
+      <stop offset="1" stop-color="#1636C4"/>
+    </linearGradient>
+    <linearGradient id="bz-side" x1="150" y1="90" x2="206" y2="186" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3B74FF"/>
+      <stop offset="1" stop-color="#102C96"/>
+    </linearGradient>
+    <linearGradient id="bz-sleeve" x1="40" y1="96" x2="86" y2="148" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#79A6FF"/>
+      <stop offset="1" stop-color="#1B4AE8"/>
+    </linearGradient>
+    <linearGradient id="bz-collar" x1="112" y1="42" x2="156" y2="92" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFB07A"/>
+      <stop offset="0.45" stop-color="#FF5C1A"/>
+      <stop offset="1" stop-color="#C63A08"/>
+    </linearGradient>
+    <radialGradient id="bz-neck" cx="46%" cy="38%" r="62%">
+      <stop offset="0" stop-color="#0A1744"/>
+      <stop offset="1" stop-color="#1C3F99"/>
+    </radialGradient>
+    <linearGradient id="bz-tag" x1="0" y1="0" x2="22" y2="36" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF8A4A"/>
+      <stop offset="1" stop-color="#E24A0C"/>
+    </linearGradient>
+    <filter id="bz-shadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="7"/>
+    </filter>
+    <filter id="bz-clay" x="-12%" y="-12%" width="124%" height="124%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2.4" result="b"/>
+      <feSpecularLighting in="b" surfaceScale="5" specularConstant="0.95" specularExponent="22" lighting-color="#ffffff" result="s">
+        <fePointLight x="-28" y="-48" z="110"/>
+      </feSpecularLighting>
+      <feComposite in="s" in2="SourceAlpha" operator="in" result="so"/>
+      <feComposite in="SourceGraphic" in2="so" operator="arithmetic" k1="0" k2="1" k3="0.8" k4="0"/>
+    </filter>
+  </defs>
+
+  <ellipse cx="128" cy="226" rx="54" ry="11" fill="#101218" opacity="0.2" filter="url(#bz-shadow)"/>
+
+  <g filter="url(#bz-clay)" transform="translate(128 128) rotate(-15) translate(-128 -120)">
+    <ellipse cx="188" cy="112" rx="29" ry="21" fill="url(#bz-side)" transform="rotate(22 188 112)"/>
+    <path
+      fill="url(#bz-body)"
+      d="M90 88c0-16 12-26 31-28 8 16 26 18 38 0 18 2 32 13 34 31 18 8 28 22 24 38-3 12-16 16-26 13v48c-1 22-18 34-57 34s-55-12-57-34v-46c-14 4-25-4-27-20-2-18 12-30 32-34z"
+    />
+    <ellipse cx="60" cy="122" rx="34" ry="23" fill="url(#bz-sleeve)" transform="rotate(-32 60 122)"/>
+    <ellipse cx="140" cy="70" rx="33" ry="24" fill="url(#bz-collar)"/>
+    <ellipse cx="139" cy="73" rx="18" ry="13.5" fill="url(#bz-neck)"/>
+    <ellipse cx="128" cy="62" rx="10" ry="4.5" fill="#FFC29A" opacity="0.45"/>
+    <g transform="translate(52 164) rotate(-30)">
+      <rect x="0" y="8" width="22" height="28" rx="6" fill="url(#bz-tag)"/>
+      <circle cx="11" cy="9" r="7.5" fill="url(#bz-tag)"/>
+      <circle cx="11" cy="9" r="3.1" fill="#1E4EFF"/>
+    </g>
+    <ellipse cx="104" cy="108" rx="16" ry="9" fill="#fff" opacity="0.28" transform="rotate(-32 104 108)"/>
+  </g>
+</svg>
