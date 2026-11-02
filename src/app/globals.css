@@ -187,6 +187,10 @@ textarea {
   box-shadow: 0 0 0 3px var(--blue-soft);
 }
 
+.field input[aria-invalid="true"] {
+  border-color: var(--tangerine);
+}
+
 .chip {
   display: inline-flex;
   align-items: center;

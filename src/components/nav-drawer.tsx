@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { LanguageMenu } from "@/components/language-menu";
+import { MenuIcon, type MenuIconName } from "@/components/menu-icon";
 import { SignOutButton } from "@/components/sign-out-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useT } from "@/components/i18n-provider";
@@ -41,20 +42,25 @@ export function NavDrawer({ signedIn }: { signedIn: boolean }) {
     };
   }, [open]);
 
-  const links = signedIn
+  const links: {
+    href: string;
+    label: string;
+    icon: MenuIconName;
+    primary?: boolean;
+  }[] = signedIn
     ? [
-        { href: "/browse", label: t.browse },
-        { href: "/garden", label: t.garden },
-        { href: "/likes", label: t.likes },
-        { href: "/inbox", label: t.inbox },
-        { href: "/sell", label: t.sell, primary: true },
-        { href: "/profile", label: t.profile },
+        { href: "/browse", label: t.browse, icon: "explorer" },
+        { href: "/garden", label: t.garden, icon: "leaf" },
+        { href: "/likes", label: t.likes, icon: "heart" },
+        { href: "/inbox", label: t.inbox, icon: "chat-bubble" },
+        { href: "/sell", label: t.sell, icon: "bag", primary: true },
+        { href: "/profile", label: t.profile, icon: "boy" },
       ]
     : [
-        { href: "/browse", label: t.browse },
-        { href: "/garden", label: t.garden },
-        { href: "/sign-in", label: t.signIn },
-        { href: "/sign-up", label: t.signUp, primary: true },
+        { href: "/browse", label: t.browse, icon: "explorer" },
+        { href: "/garden", label: t.garden, icon: "leaf" },
+        { href: "/sign-in", label: t.signIn, icon: "key" },
+        { href: "/sign-up", label: t.signUp, icon: "plus", primary: true },
       ];
 
   return (
@@ -120,7 +126,7 @@ export function NavDrawer({ signedIn }: { signedIn: boolean }) {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`rounded-2xl px-3 py-3 text-lg ${
+                className={`flex items-center gap-3 rounded-2xl px-3 py-3 text-lg ${
                   item.primary
                     ? "btn btn-tangerine mt-2 justify-start !rounded-2xl"
                     : path === item.href
@@ -128,6 +134,7 @@ export function NavDrawer({ signedIn }: { signedIn: boolean }) {
                       : "hover:bg-card"
                 }`}
               >
+                <MenuIcon name={item.icon} size={40} className="size-10" />
                 {item.label}
               </Link>
             ))}

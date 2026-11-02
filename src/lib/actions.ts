@@ -16,7 +16,8 @@ import { getDb } from "@/lib/db";
 import { interest, listing, profile, user } from "@/lib/db/schema";
 import { hasSocial, getViewer } from "@/lib/session";
 import { toggleLike as toggleLikeData } from "@/lib/data";
-import { normalizeHandle } from "@/lib/privacy";
+import { parseSocials } from "@/lib/socials";
+import { verifySocials } from "@/lib/verify-socials";
 
 async function requireUser() {
   const viewer = await getViewer();
@@ -38,14 +39,23 @@ export async function saveProfileAction(formData: FormData) {
   const lngRaw = formData.get("lng");
   const lat = latRaw ? Number(latRaw) : neighborhood.lat;
   const lng = lngRaw ? Number(lngRaw) : neighborhood.lng;
-  const instagram = normalizeHandle(String(formData.get("instagram") || ""));
-  const facebook = String(formData.get("facebook") || "").trim();
-  const tiktok = normalizeHandle(String(formData.get("tiktok") || ""));
-  const whatsapp = String(formData.get("whatsapp") || "").trim();
-  const socials = { instagram, facebook, tiktok, whatsapp };
-  if (!hasSocial(socials)) {
+  const parsed = parseSocials({
+    instagram: String(formData.get("instagram") || ""),
+    facebook: String(formData.get("facebook") || ""),
+    tiktok: String(formData.get("tiktok") || ""),
+    whatsapp: String(formData.get("whatsapp") || ""),
+  });
+  if (parsed.invalid.length) {
+    return { error: "invalid" as const, fields: parsed.invalid };
+  }
+  if (parsed.empty || !hasSocial(parsed.values)) {
     return { error: "social" as const };
   }
+  const missing = await verifySocials(parsed.values);
+  if (missing.length) {
+    return { error: "invalid" as const, fields: missing };
+  }
+  const { instagram, facebook, tiktok, whatsapp } = parsed.values;
 
   const db = getDb();
   await db
@@ -55,10 +65,10 @@ export async function saveProfileAction(formData: FormData) {
       neighborhoodId: neighborhood.id,
       lat,
       lng,
-      instagram: instagram || null,
-      facebook: facebook || null,
-      tiktok: tiktok || null,
-      whatsapp: whatsapp || null,
+      instagram,
+      facebook,
+      tiktok,
+      whatsapp,
       onboardedAt: new Date(),
     })
     .onConflictDoUpdate({
@@ -67,10 +77,10 @@ export async function saveProfileAction(formData: FormData) {
         neighborhoodId: neighborhood.id,
         lat,
         lng,
-        instagram: instagram || null,
-        facebook: facebook || null,
-        tiktok: tiktok || null,
-        whatsapp: whatsapp || null,
+        instagram,
+        facebook,
+        tiktok,
+        whatsapp,
         onboardedAt: new Date(),
       },
     });

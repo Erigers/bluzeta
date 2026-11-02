@@ -3,6 +3,7 @@
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { useT } from "@/components/i18n-provider";
+import { MenuIcon } from "@/components/menu-icon";
 
 export function ThemeToggle() {
   const { t } = useT();
@@ -13,12 +14,20 @@ export function ThemeToggle() {
   return (
     <button
       type="button"
-      className="grid h-9 w-9 place-items-center rounded-full border border-line"
+      className="grid h-11 w-11 place-items-center rounded-full border border-line"
       onClick={() => mounted && setTheme(next)}
       aria-label={t.theme}
       suppressHydrationWarning
     >
-      {mounted && theme === "dark" ? "☀" : "☾"}
+      {mounted ? (
+        <MenuIcon
+          name={theme === "dark" ? "sun" : "moon"}
+          size={28}
+          className="size-7"
+        />
+      ) : (
+        <span className="size-7" />
+      )}
     </button>
   );
 }

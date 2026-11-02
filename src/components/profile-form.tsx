@@ -2,8 +2,24 @@
 
 import { useState } from "react";
 import { useT } from "@/components/i18n-provider";
+import { MenuIcon } from "@/components/menu-icon";
 import { neighborhoods } from "@/lib/constants";
 import { saveProfileAction } from "@/lib/actions";
+import { parseSocials, type SocialKind } from "@/lib/socials";
+
+const SOCIAL_FIELDS: { name: SocialKind; placeholder: string }[] = [
+  { name: "instagram", placeholder: "@user or instagram.com/user" },
+  { name: "facebook", placeholder: "facebook.com/user" },
+  { name: "tiktok", placeholder: "@user or tiktok.com/@user" },
+  { name: "whatsapp", placeholder: "+355 69..." },
+];
+
+const INVALID_MESSAGE = {
+  instagram: "invalidInstagram",
+  facebook: "invalidFacebook",
+  tiktok: "invalidTiktok",
+  whatsapp: "invalidWhatsapp",
+} as const;
 
 export function ProfileForm({
   initial,
@@ -18,14 +34,50 @@ export function ProfileForm({
 }) {
   const { t } = useT();
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<SocialKind, string>>>({});
   const [pending, setPending] = useState(false);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
 
+  function messageFor(kind: SocialKind) {
+    return t[INVALID_MESSAGE[kind]];
+  }
+
+  function readSocials(form: HTMLFormElement) {
+    const data = new FormData(form);
+    return parseSocials({
+      instagram: String(data.get("instagram") || ""),
+      facebook: String(data.get("facebook") || ""),
+      tiktok: String(data.get("tiktok") || ""),
+      whatsapp: String(data.get("whatsapp") || ""),
+    });
+  }
+
+  function showFieldErrors(fields: SocialKind[]) {
+    const next: Partial<Record<SocialKind, string>> = {};
+    for (const kind of fields) next[kind] = messageFor(kind);
+    setFieldErrors(next);
+  }
+
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const form = e.currentTarget;
+    const parsed = readSocials(form);
+    if (parsed.invalid.length) {
+      showFieldErrors(parsed.invalid);
+      setError("");
+      return;
+    }
+    if (parsed.empty) {
+      setFieldErrors({});
+      setError(t.atLeastOneSocial);
+      return;
+    }
+    setFieldErrors({});
+    setError("");
     setPending(true);
-    const result = await saveProfileAction(new FormData(e.currentTarget));
+    const result = await saveProfileAction(new FormData(form));
     if (result?.error === "social") setError(t.atLeastOneSocial);
+    else if (result?.error === "invalid") showFieldErrors(result.fields);
     setPending(false);
   }
 
@@ -63,26 +115,58 @@ export function ProfileForm({
       ) : null}
       <fieldset className="grid gap-4">
         <legend className="font-medium">{t.socials}</legend>
-        <label className="field">
-          <span>{t.instagram}</span>
-          <input name="instagram" defaultValue={initial?.instagram ?? ""} placeholder="@user" />
-        </label>
-        <label className="field">
-          <span>{t.facebook}</span>
-          <input name="facebook" defaultValue={initial?.facebook ?? ""} />
-        </label>
-        <label className="field">
-          <span>{t.tiktok}</span>
-          <input name="tiktok" defaultValue={initial?.tiktok ?? ""} placeholder="@user" />
-        </label>
-        <label className="field">
-          <span>{t.whatsapp}</span>
-          <input name="whatsapp" defaultValue={initial?.whatsapp ?? ""} placeholder="+355..." />
-        </label>
+        <p className="text-sm text-muted">{t.socialsHint}</p>
+        {SOCIAL_FIELDS.map((field) => {
+          const fieldError = fieldErrors[field.name];
+          return (
+            <label key={field.name} className="field">
+              <span className="flex items-center gap-2 text-sm text-foreground">
+                <MenuIcon name={field.name} size={28} className="size-7" />
+                {t[field.name]}
+              </span>
+              <input
+                name={field.name}
+                defaultValue={initial?.[field.name] ?? ""}
+                placeholder={field.placeholder}
+                autoComplete="off"
+                spellCheck={false}
+                aria-invalid={fieldError ? true : undefined}
+                aria-describedby={fieldError ? `${field.name}-error` : undefined}
+                onBlur={(e) => {
+                  const raw = e.currentTarget.value;
+                  if (!raw.trim()) {
+                    setFieldErrors((current) => {
+                      if (!current[field.name]) return current;
+                      const next = { ...current };
+                      delete next[field.name];
+                      return next;
+                    });
+                    return;
+                  }
+                  const parsed = readSocials(e.currentTarget.form!);
+                  setFieldErrors((current) => {
+                    if (parsed.invalid.includes(field.name)) {
+                      return { ...current, [field.name]: messageFor(field.name) };
+                    }
+                    if (!current[field.name]) return current;
+                    const next = { ...current };
+                    delete next[field.name];
+                    return next;
+                  });
+                }}
+              />
+              {fieldError ? (
+                <p id={`${field.name}-error`} className="text-sm text-tangerine">
+                  {fieldError}
+                </p>
+              ) : null}
+            </label>
+          );
+        })}
       </fieldset>
       {error ? <p className="text-sm text-tangerine">{error}</p> : null}
       <button className="btn btn-tangerine" disabled={pending}>
-        {pending ? t.saving : t.save}
+        {pending ? t.checkingSocials : t.save}
       </button>
     </form>
   );

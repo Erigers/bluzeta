@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useT } from "@/components/i18n-provider";
+import { MenuIcon, type MenuIconName } from "@/components/menu-icon";
 
 export function BottomNav({ signedIn }: { signedIn: boolean }) {
   const { t } = useT();
@@ -12,12 +13,22 @@ export function BottomNav({ signedIn }: { signedIn: boolean }) {
   useEffect(() => setShow(true), []);
   if (!show) return null;
 
-  const items = [
-    { href: "/browse", label: t.browse },
-    { href: "/likes", label: t.likes },
-    { href: signedIn ? "/sell" : "/sign-up", label: t.sell, primary: true },
-    { href: "/inbox", label: t.inbox },
-    { href: "/profile", label: t.profile },
+  const items: {
+    href: string;
+    label: string;
+    icon: MenuIconName;
+    primary?: boolean;
+  }[] = [
+    { href: "/browse", label: t.browse, icon: "explorer" },
+    { href: "/likes", label: t.likes, icon: "heart" },
+    {
+      href: signedIn ? "/sell" : "/sign-up",
+      label: t.sell,
+      icon: signedIn ? "bag" : "plus",
+      primary: true,
+    },
+    { href: "/inbox", label: t.inbox, icon: "chat-bubble" },
+    { href: "/profile", label: t.profile, icon: "boy" },
   ];
 
   return (
@@ -29,7 +40,7 @@ export function BottomNav({ signedIn }: { signedIn: boolean }) {
             <li key={item.label}>
               <Link
                 href={item.href}
-                className={`flex flex-col items-center rounded-2xl px-1 py-1 ${
+                className={`flex flex-col items-center gap-0.5 rounded-2xl px-1 py-1 ${
                   item.primary
                     ? "font-semibold text-tangerine"
                     : active
@@ -37,6 +48,7 @@ export function BottomNav({ signedIn }: { signedIn: boolean }) {
                       : "text-muted"
                 }`}
               >
+                <MenuIcon name={item.icon} size={28} className="size-7" />
                 {item.label}
               </Link>
             </li>
