@@ -119,8 +119,8 @@ export function ProfileForm({
           <input type="hidden" name="lng" value={coords.lng} />
         </>
       ) : null}
-      <fieldset className="grid gap-4 rounded-2xl border border-line p-4">
-        <legend className="px-1 font-medium">{t.publicScores}</legend>
+      <fieldset className="grid gap-3">
+        <legend className="font-medium">{t.publicScores}</legend>
         <p className="text-sm text-muted">{t.communicationScoreHint}</p>
         <ScoreSlider
           icon="communication"

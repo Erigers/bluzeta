@@ -1,16 +1,17 @@
 "use client";
 
 import {
+  animate,
   motion,
   useMotionValue,
-  useScroll,
+  useReducedMotion,
   useSpring,
   useTransform,
   type MotionValue,
 } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { HeroCtas } from "@/components/hero-ctas";
 import { useT } from "@/components/i18n-provider";
 
@@ -33,27 +34,26 @@ export function CollectionSurfer({
   signedIn?: boolean;
 }) {
   const { t } = useT();
-  const containerRef = useRef<HTMLDivElement>(null);
+  const reduceMotion = useReducedMotion();
   const duplicatedItems = [...items, ...items];
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
-  });
+  const progress = useMotionValue(0);
 
-  const smoothProgress = useSpring(scrollYProgress, {
-    mass: 0.1,
-    stiffness: 100,
-    damping: 20,
-  });
+  useEffect(() => {
+    if (items.length === 0 || reduceMotion) {
+      progress.set(0);
+      return;
+    }
 
-  const stepX = 240;
-  const stepY = -84;
-  const stepZ = -288;
+    const controls = animate(progress, 1, {
+      duration: Math.max(18, items.length * 2.4),
+      ease: "linear",
+      repeat: Infinity,
+      repeatType: "loop",
+    });
 
-  const x = useTransform(smoothProgress, [0, 1], [0, -items.length * stepX]);
-  const y = useTransform(smoothProgress, [0, 1], [0, -items.length * stepY]);
-  const z = useTransform(smoothProgress, [0, 1], [0, -items.length * stepZ]);
+    return () => controls.stop();
+  }, [items.length, progress, reduceMotion]);
 
   const mouseX = useMotionValue(-10000);
   const mouseY = useMotionValue(-10000);
@@ -61,13 +61,9 @@ export function CollectionSurfer({
   if (items.length === 0) return null;
 
   return (
-    <section
-      ref={containerRef}
-      className="full-bleed"
-      style={{ height: `calc(${items.length + 1} * 100svh)` }}
-    >
+    <section className="full-bleed relative h-[min(38rem,calc(100svh-var(--header-h)-3.5rem))] overflow-hidden bg-background md:h-[calc(100svh-var(--header-h))] dark:bg-black">
       <div
-        className="sticky top-[var(--header-h)] flex h-[calc(100svh-var(--header-h))] items-center justify-center overflow-hidden bg-background dark:bg-black"
+        className="absolute inset-0"
         onMouseMove={(event) => {
           if (variant === "simple") return;
           mouseX.set(event.clientX);
@@ -79,57 +75,110 @@ export function CollectionSurfer({
           mouseY.set(-10000);
         }}
       >
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-20 flex w-[min(100%,36rem)] flex-col justify-start bg-gradient-to-r from-background via-background/90 to-transparent px-6 pt-8 pb-10 dark:from-black dark:via-black/85 md:px-12 md:pt-12">
-          <p className="text-sm font-semibold tracking-[0.18em] text-blue uppercase">
-            {t.tagline}
-          </p>
-          <h1 className="mt-3 font-[family-name:var(--font-display)] text-4xl leading-tight md:text-6xl">
-            {t.heroTitle}
-          </h1>
-          <p className="mt-4 max-w-md text-lg text-muted">{t.heroBody}</p>
-          <div className="pointer-events-auto">
-            <HeroCtas t={t} signedIn={signedIn} />
-          </div>
-          <p className="mt-8 text-[11px] tracking-[0.28em] text-muted uppercase">
-            {t.collection} ({items.length}) · {t.scrollToSurf}
-          </p>
-        </div>
+        <DeckLayer
+          items={duplicatedItems}
+          count={items.length}
+          progress={progress}
+          mouseX={mouseX}
+          mouseY={mouseY}
+          variant={variant}
+          mode="mobile"
+        />
+        <DeckLayer
+          items={duplicatedItems}
+          count={items.length}
+          progress={progress}
+          mouseX={mouseX}
+          mouseY={mouseY}
+          variant={variant}
+          mode="desktop"
+        />
+      </div>
 
-        <div
-          className="absolute inset-0 flex items-center justify-center md:translate-x-[8%]"
-          style={{
-            perspective: "2000px",
-            perspectiveOrigin: "62% 32%",
-          }}
-        >
-          <motion.div
-            className="relative h-0 w-0"
-            style={{
-              x,
-              y,
-              z,
-              transformStyle: "preserve-3d",
-            }}
-          >
-            {duplicatedItems.map((item, index) => (
-              <SurfCard
-                key={`${item.id}-${index}`}
-                item={item}
-                index={index}
-                count={items.length}
-                stepX={stepX}
-                stepY={stepY}
-                stepZ={stepZ}
-                mouseX={mouseX}
-                mouseY={mouseY}
-                scrollSpring={smoothProgress}
-                variant={variant}
-              />
-            ))}
-          </motion.div>
+      <div className="pointer-events-none absolute inset-0 z-20 flex flex-col justify-start bg-gradient-to-b from-background from-35% via-background/80 to-transparent px-6 pt-7 pb-8 dark:from-black dark:via-black/80 md:w-[min(100%,36rem)] md:bg-gradient-to-r md:from-background md:via-background/90 md:to-transparent md:px-12 md:pt-12 md:dark:from-black md:dark:via-black/85 md:dark:to-transparent">
+        <p className="text-sm font-semibold tracking-[0.18em] text-blue uppercase">
+          {t.tagline}
+        </p>
+        <h1 className="mt-3 font-[family-name:var(--font-display)] text-4xl leading-tight md:text-6xl">
+          {t.heroTitle}
+        </h1>
+        <p className="mt-4 max-w-md text-lg text-muted">{t.heroBody}</p>
+        <div className="pointer-events-auto">
+          <HeroCtas t={t} signedIn={signedIn} />
         </div>
+        <p className="mt-8 text-[11px] tracking-[0.28em] text-muted uppercase">
+          {t.collection} ({items.length})
+        </p>
       </div>
     </section>
+  );
+}
+
+function DeckLayer({
+  items,
+  count,
+  progress,
+  mouseX,
+  mouseY,
+  variant,
+  mode,
+}: {
+  items: CollectionItem[];
+  count: number;
+  progress: MotionValue<number>;
+  mouseX: MotionValue<number>;
+  mouseY: MotionValue<number>;
+  variant: CollectionSurferVariant;
+  mode: "mobile" | "desktop";
+}) {
+  const mobile = mode === "mobile";
+  const stepX = mobile ? 168 : 240;
+  const stepY = mobile ? -52 : -84;
+  const stepZ = mobile ? -200 : -288;
+
+  const x = useTransform(progress, [0, 1], [0, -count * stepX]);
+  const y = useTransform(progress, [0, 1], [0, -count * stepY]);
+  const z = useTransform(progress, [0, 1], [0, -count * stepZ]);
+
+  return (
+    <div
+      className={
+        mobile
+          ? "absolute inset-0 flex items-start justify-start pl-[4%] pt-[34%] md:hidden"
+          : "absolute inset-0 hidden items-center justify-center md:flex md:translate-x-[8%]"
+      }
+      style={{
+        perspective: mobile ? "1200px" : "2000px",
+        perspectiveOrigin: mobile ? "55% 55%" : "62% 32%",
+      }}
+    >
+      <motion.div
+        className="relative h-0 w-0"
+        style={{
+          x,
+          y,
+          z,
+          transformStyle: "preserve-3d",
+        }}
+      >
+        {items.map((item, index) => (
+          <SurfCard
+            key={`${mode}-${item.id}-${index}`}
+            item={item}
+            index={index}
+            count={count}
+            stepX={stepX}
+            stepY={stepY}
+            stepZ={stepZ}
+            mouseX={mouseX}
+            mouseY={mouseY}
+            variant={variant}
+            interactive={!mobile}
+            tilt={mobile ? -28 : -50}
+          />
+        ))}
+      </motion.div>
+    </div>
   );
 }
 
@@ -142,8 +191,9 @@ function SurfCard({
   stepZ,
   mouseX,
   mouseY,
-  scrollSpring,
   variant,
+  interactive,
+  tilt,
 }: {
   item: CollectionItem;
   index: number;
@@ -153,16 +203,17 @@ function SurfCard({
   stepZ: number;
   mouseX: MotionValue<number>;
   mouseY: MotionValue<number>;
-  scrollSpring: MotionValue<number>;
   variant: CollectionSurferVariant;
+  interactive: boolean;
+  tilt: number;
 }) {
   const { t } = useT();
   const router = useRouter();
   const ref = useRef<HTMLDivElement>(null);
   const href = `/item/${item.id}`;
 
-  const distance = useTransform([mouseX, mouseY, scrollSpring], ([mx, my]) => {
-    if (!ref.current || variant === "simple") return 200;
+  const distance = useTransform([mouseX, mouseY], ([mx, my]) => {
+    if (!interactive || !ref.current || variant === "simple") return 200;
     const rect = ref.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
@@ -186,29 +237,46 @@ function SurfCard({
   const transform = useTransform(
     [springScale, springUplift],
     ([scale, uplift]) => {
-      const scaleValue = variant === "magnetic" ? Number(scale) : 1;
-      const upliftValue = variant === "uplift" ? Number(uplift) : 0;
-      return `translate3d(${index * stepX}px, ${index * stepY + upliftValue}px, ${index * stepZ}px) rotateY(-50deg) scale(${scaleValue})`;
+      const scaleValue =
+        interactive && variant === "magnetic" ? Number(scale) : 1;
+      const upliftValue =
+        interactive && variant === "uplift" ? Number(uplift) : 0;
+      return `translate3d(${index * stepX}px, ${index * stepY + upliftValue}px, ${index * stepZ}px) rotateY(${tilt}deg) scale(${scaleValue})`;
     },
   );
 
   return (
     <motion.div
       ref={ref}
-      tabIndex={0}
-      aria-label={item.title}
-      className="group absolute h-[340px] w-[250px] cursor-pointer overflow-hidden bg-neutral-900 shadow-2xl md:h-[400px] md:w-[300px]"
+      tabIndex={interactive ? 0 : -1}
+      aria-hidden={!interactive}
+      aria-label={interactive ? item.title : undefined}
+      className={`absolute overflow-hidden bg-neutral-900 shadow-2xl ${
+        interactive
+          ? "group h-[400px] w-[300px] cursor-pointer"
+          : "pointer-events-none h-[260px] w-[190px] opacity-90"
+      }`}
       style={{
         transform,
         transformStyle: "preserve-3d",
       }}
-      onClick={() => router.push(href)}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          router.push(href);
-        }
-      }}
+      onClick={
+        interactive
+          ? () => {
+              router.push(href);
+            }
+          : undefined
+      }
+      onKeyDown={
+        interactive
+          ? (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                router.push(href);
+              }
+            }
+          : undefined
+      }
     >
       <div className="absolute top-3 left-3 z-10 flex flex-col items-start gap-1.5">
         <span className="font-[family-name:var(--font-display)] text-sm font-bold text-white/80">
@@ -223,24 +291,22 @@ function SurfCard({
           </span>
         ) : null}
       </div>
-      <a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label={t.openInNewTab}
-        className="pointer-events-none absolute top-3 right-3 z-20 grid h-9 w-9 place-items-center rounded-full bg-black/60 text-white opacity-0 shadow-lg backdrop-blur-sm transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 hover:bg-tangerine focus-visible:pointer-events-auto focus-visible:opacity-100"
-        onClick={(event) => event.stopPropagation()}
-        onPointerDown={(event) => event.stopPropagation()}
-        onKeyDown={(event) => event.stopPropagation()}
-      >
-        <ArrowUpRight size={18} strokeWidth={2.25} />
-      </a>
+      {interactive ? (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={t.openInNewTab}
+          className="pointer-events-none absolute top-3 right-3 z-20 grid h-9 w-9 place-items-center rounded-full bg-black/60 text-white opacity-0 shadow-lg backdrop-blur-sm transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 hover:bg-tangerine focus-visible:pointer-events-auto focus-visible:opacity-100"
+          onClick={(event) => event.stopPropagation()}
+          onPointerDown={(event) => event.stopPropagation()}
+          onKeyDown={(event) => event.stopPropagation()}
+        >
+          <ArrowUpRight size={18} strokeWidth={2.25} />
+        </a>
+      ) : null}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={item.image}
-        alt=""
-        className="h-full w-full object-cover"
-      />
+      <img src={item.image} alt="" className="h-full w-full object-cover" />
       <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-3 pt-10 pb-3 text-sm font-medium text-white">
         {item.title}
       </span>

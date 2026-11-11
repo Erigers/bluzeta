@@ -12,7 +12,7 @@ export function ProfileScores({
 }) {
   const { t } = useT();
   return (
-    <div className="grid gap-5 rounded-2xl border border-line bg-card p-4">
+    <div className="grid gap-3">
       <ScoreSlider
         icon="communication"
         label={t.communicationScore}

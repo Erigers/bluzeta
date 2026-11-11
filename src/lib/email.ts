@@ -1,3 +1,23 @@
+import nodemailer from "nodemailer";
+
+function getSmtpConfig() {
+  const user = process.env.SMTP_USER || process.env.EMAIL_FROM_ADDRESS;
+  const pass = process.env.SMTP_PASS;
+  const host = process.env.SMTP_HOST || "mail.privateemail.com";
+  const port = Number(process.env.SMTP_PORT || 465);
+  const fromAddress = process.env.EMAIL_FROM_ADDRESS || user || "admin@bluzeta.com";
+  const fromName = process.env.EMAIL_FROM_NAME || "bluzeta";
+
+  return {
+    host,
+    port,
+    secure: port === 465,
+    user,
+    pass,
+    from: `${fromName} <${fromAddress}>`,
+  };
+}
+
 export async function sendResetPasswordEmail({
   to,
   name,
@@ -7,33 +27,38 @@ export async function sendResetPasswordEmail({
   name: string;
   url: string;
 }) {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    throw new Error("RESEND_API_KEY is not set");
+  const smtp = getSmtpConfig();
+
+  if (!smtp.user || !smtp.pass) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        `[bluzeta] SMTP is not configured — password reset link for ${to}:\n${url}`,
+      );
+      return;
+    }
+    throw new Error("SMTP_USER and SMTP_PASS must be set");
   }
 
-  const from = process.env.RESEND_FROM_EMAIL || "bluzeta <beth.t@example.com>";
-  const safeName = name.replace(/[<>&]/g, "");
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
+  const transporter = nodemailer.createTransport({
+    host: smtp.host,
+    port: smtp.port,
+    secure: smtp.secure,
+    auth: {
+      user: smtp.user,
+      pass: smtp.pass,
     },
-    body: JSON.stringify({
-      from,
-      to: [to],
-      subject: "Ndrysho fjalëkalimin — bluzeta",
-      html: `
-        <p>Përshëndetje${safeName ? ` ${safeName}` : ""},</p>
-        <p>Kliko linkun për të vendosur një fjalëkalim të ri në bluzeta:</p>
-        <p><a href="${url}">Ndrysho fjalëkalimin</a></p>
-        <p>Nëse s’e kërkove këtë, injoroje këtë email.</p>
-      `,
-    }),
   });
 
-  if (!res.ok) {
-    throw new Error(`Failed to send reset email (${res.status})`);
-  }
+  const safeName = name.replace(/[<>&]/g, "");
+  await transporter.sendMail({
+    from: smtp.from,
+    to,
+    subject: "Ndrysho fjalëkalimin — bluzeta",
+    html: `
+      <p>Përshëndetje${safeName ? ` ${safeName}` : ""},</p>
+      <p>Kliko linkun për të vendosur një fjalëkalim të ri në bluzeta:</p>
+      <p><a href="${url}">Ndrysho fjalëkalimin</a></p>
+      <p>Nëse s’e kërkove këtë, injoroje këtë email.</p>
+    `,
+  });
 }

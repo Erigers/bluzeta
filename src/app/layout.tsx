@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Manrope } from "next/font/google";
 import localFont from "next/font/local";
 import { BottomNav } from "@/components/bottom-nav";
@@ -59,9 +60,13 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang={locale}
       className={`${display.variable} ${body.variable} h-full`}
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
-      <body className="min-h-full overflow-x-visible overflow-y-visible bg-background text-foreground antialiased">
+      <body
+        className="min-h-full overflow-x-visible overflow-y-visible bg-background text-foreground antialiased"
+        suppressHydrationWarning
+      >
         <Providers locale={locale} messages={t}>
           {viewer?.banned ? (
             <main className="mx-auto grid min-h-dvh max-w-lg place-content-center px-4 text-center">
@@ -88,6 +93,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             </>
           )}
         </Providers>
+        <Analytics />
       </body>
     </html>
   );

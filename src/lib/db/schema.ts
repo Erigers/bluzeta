@@ -172,6 +172,24 @@ export const report = pgTable(
   ],
 );
 
+export const instagramStoryPost = pgTable(
+  "instagram_story_post",
+  {
+    id: text("id").primaryKey(),
+    listingId: text("listing_id")
+      .notNull()
+      .references(() => listing.id, { onDelete: "cascade" }),
+    imageUrl: text("image_url").notNull(),
+    containerId: text("container_id"),
+    mediaId: text("media_id"),
+    postedAt: timestamp("posted_at").notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("instagram_story_listing_idx").on(table.listingId),
+    index("instagram_story_posted_idx").on(table.postedAt),
+  ],
+);
+
 export const interest = pgTable(
   "interest",
   {

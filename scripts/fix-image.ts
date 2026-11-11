@@ -8,7 +8,7 @@ async function main() {
     .update(listing)
     .set({
       images: [
-        "https://images.unsplash.com/photo-1572635196237-14b3f2816fef?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?auto=format&fit=crop&w=1200&q=80",
       ],
     })
     .where(eq(listing.title, "Syze dielli vintage"));

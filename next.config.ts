@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.blob.vercel-storage.com" },
     ],
   },
+  serverExternalPackages: ["onnxruntime-web", "@imgly/background-removal"],
   turbopack: {
     rules: {
       "*.css": {

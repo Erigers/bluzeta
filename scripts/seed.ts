@@ -10,7 +10,7 @@ const DEMO_PASSWORD = "bluzeta-demo";
 const people = [
   {
     name: "Bluzeta Admin",
-    email: "admin@bluzeta.al",
+    email: "admin@bluzeta.com",
     role: "admin",
     neighborhoodId: "qender",
     lat: 41.3275,
@@ -566,7 +566,7 @@ async function main() {
   }
 
   console.log(
-    "Seed complete. Demo logins: admin@bluzeta.al / ana@bluzeta.al / lira@bluzeta.al / arben@bluzeta.al (password: bluzeta-demo)",
+    "Seed complete. Demo logins: admin@bluzeta.com / ana@bluzeta.al / lira@bluzeta.al / arben@bluzeta.al (password: bluzeta-demo)",
   );
 }
 

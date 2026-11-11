@@ -25,6 +25,13 @@ export function AdminNav({ pending }: { pending: number }) {
           </span>
         ) : null}
       </Link>
+      <Link
+        href="/admin/instagram"
+        className="chip"
+        data-active={path === "/admin/instagram"}
+      >
+        {t.adminInstagram}
+      </Link>
     </nav>
   );
 }

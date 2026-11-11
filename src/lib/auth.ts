@@ -57,6 +57,8 @@ function createAuth() {
     trustedOrigins: [
       "http://localhost:3000",
       "http://localhost:3010",
+      "https://bluzeta.com",
+      "https://www.bluzeta.com",
       "https://*.vercel.app",
     ],
     session: {

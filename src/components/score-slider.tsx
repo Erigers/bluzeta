@@ -32,30 +32,32 @@ export function ScoreSlider({
   const percent = max === min ? 0 : ((safe - min) / (max - min)) * 100;
 
   return (
-    <div className="grid gap-2">
+    <div className={`score-slider ${readOnly ? "score-slider--readonly" : ""}`}>
       <div className="flex items-center justify-between gap-3">
-        <span className="flex items-center gap-2 text-sm font-medium">
-          <MenuIcon name={icon} size={28} className="size-7" />
+        <span className="flex items-center gap-2.5 text-sm font-medium">
+          <span className="score-slider__icon">
+            <MenuIcon name={icon} size={34} className="size-8" />
+          </span>
           {label}
         </span>
-        <span className="tabular-nums text-sm text-muted">
+        <span className="score-slider__value tabular-nums">
           {shown}
-          <span className="text-muted/70"> / {formatValue ? formatValue(max) : max}</span>
+          <span className="score-slider__max">
+            {" "}
+            / {formatValue ? formatValue(max) : max}
+          </span>
         </span>
       </div>
-      <div className="relative">
+      <div className="score-slider__track-wrap">
+        <div className="score-slider__rail" aria-hidden />
         <div
-          className="pointer-events-none absolute inset-y-[7px] left-0 right-0 rounded-full bg-line"
-          aria-hidden
-        />
-        <div
-          className="pointer-events-none absolute inset-y-[7px] left-0 rounded-full bg-blue"
+          className="score-slider__fill"
           style={{ width: `${percent}%` }}
           aria-hidden
         />
         <input
           type="range"
-          className="score-range relative z-10 w-full"
+          className="score-range"
           name={name}
           min={min}
           max={max}
@@ -66,7 +68,6 @@ export function ScoreSlider({
           aria-valuemin={min}
           aria-valuemax={max}
           aria-valuenow={safe}
-          aria-readonly={readOnly || undefined}
           onChange={
             readOnly || !onChange
               ? undefined

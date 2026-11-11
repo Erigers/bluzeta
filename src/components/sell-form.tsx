@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { upload } from "@vercel/blob/client";
+import { FeaturedPhotoEditor } from "@/components/featured-photo-editor";
 import { useT } from "@/components/i18n-provider";
 import {
   categories,
@@ -17,24 +18,59 @@ import { createListingAction } from "@/lib/actions";
 export function SellForm() {
   const { t } = useT();
   const [images, setImages] = useState<string[]>([]);
+  const [originals, setOriginals] = useState<string[]>([]);
+  const [featuredIndex, setFeaturedIndex] = useState(0);
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [category, setCategory] = useState<(typeof categories)[number]>("clothes");
   const subcategories = useMemo(() => getSubcategories(category), [category]);
   const [subcategory, setSubcategory] = useState(subcategories[0] ?? "");
   const isClothes = category === "clothes";
+  const featuredUrl = images[featuredIndex] ?? null;
+  const featuredSource = originals[featuredIndex] ?? featuredUrl;
 
   async function onFiles(files: FileList | null) {
     if (!files) return;
-    const uploaded: string[] = [];
-    for (const file of Array.from(files).slice(0, 6)) {
-      const blob = await upload(`listings/${crypto.randomUUID()}-${file.name}`, file, {
-        access: "public",
-        handleUploadUrl: "/api/upload",
+    setUploading(true);
+    setError("");
+    try {
+      const uploaded: string[] = [];
+      const room = Math.max(0, 6 - images.length);
+      for (const file of Array.from(files).slice(0, room)) {
+        const blob = await upload(
+          `listings/${crypto.randomUUID()}-${file.name}`,
+          file,
+          {
+            access: "public",
+            handleUploadUrl: "/api/upload",
+          },
+        );
+        uploaded.push(blob.url);
+      }
+      setImages((prev) => {
+        const next = [...prev, ...uploaded].slice(0, 6);
+        if (prev.length === 0) setFeaturedIndex(0);
+        return next;
       });
-      uploaded.push(blob.url);
+      setOriginals((prev) => [...prev, ...uploaded].slice(0, 6));
+    } catch {
+      setError(t.errorGeneric);
+    } finally {
+      setUploading(false);
     }
-    setImages((prev) => [...prev, ...uploaded].slice(0, 6));
+  }
+
+  function removeImage(index: number) {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+    setOriginals((prev) => prev.filter((_, i) => i !== index));
+    setFeaturedIndex((current) => {
+      const nextLength = images.length - 1;
+      if (nextLength <= 0) return 0;
+      if (index === current) return 0;
+      if (index < current) return current - 1;
+      return Math.min(current, nextLength - 1);
+    });
   }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -44,8 +80,12 @@ export function SellForm() {
       return;
     }
     setPending(true);
+    const ordered = [
+      images[featuredIndex],
+      ...images.filter((_, index) => index !== featuredIndex),
+    ].filter(Boolean);
     const form = new FormData(e.currentTarget);
-    form.set("images", images.join(","));
+    form.set("images", ordered.join(","));
     const result = await createListingAction(form);
     if (result?.error) setError(t.errorGeneric);
     setPending(false);
@@ -53,15 +93,73 @@ export function SellForm() {
 
   return (
     <form onSubmit={onSubmit} className="grid gap-5">
-      <label className="field">
+      <div className="field">
         <span>{t.photos}</span>
-        <input type="file" accept="image/*" multiple onChange={(e) => onFiles(e.target.files)} />
+        <p className="text-sm text-muted">{t.featuredPhotoHint}</p>
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          disabled={uploading || images.length >= 6}
+          onChange={(e) => onFiles(e.target.files)}
+        />
+        {uploading ? (
+          <p className="mt-2 text-sm text-muted">{t.photoUploading}</p>
+        ) : null}
         <div className="mt-2 grid grid-cols-3 gap-2">
-          {images.map((src) => (
-            <img key={src} src={src} alt="" className="h-28 w-full rounded-xl object-cover" />
-          ))}
+          {images.map((src, index) => {
+            const isFeatured = index === featuredIndex;
+            return (
+              <div key={`${src}-${index}`} className="relative">
+                <button
+                  type="button"
+                  className={`block w-full overflow-hidden rounded-xl border-2 ${
+                    isFeatured ? "border-blue" : "border-transparent"
+                  }`}
+                  onClick={() => setFeaturedIndex(index)}
+                  aria-pressed={isFeatured}
+                  aria-label={
+                    isFeatured ? t.featuredPhoto : t.setFeaturedPhoto
+                  }
+                >
+                  <img
+                    src={src}
+                    alt=""
+                    className="h-28 w-full object-cover"
+                  />
+                </button>
+                {isFeatured ? (
+                  <span className="absolute top-2 left-2 rounded-full bg-blue px-2 py-0.5 text-[11px] font-semibold text-white">
+                    {t.featuredPhoto}
+                  </span>
+                ) : null}
+                <button
+                  type="button"
+                  className="absolute top-2 right-2 grid size-7 place-items-center rounded-full bg-card/90 text-sm"
+                  aria-label={t.removePhoto}
+                  onClick={() => removeImage(index)}
+                >
+                  ×
+                </button>
+              </div>
+            );
+          })}
         </div>
-      </label>
+      </div>
+
+      {featuredSource ? (
+        <FeaturedPhotoEditor
+          sourceUrl={featuredSource}
+          onApplied={(url) => {
+            setImages((prev) =>
+              prev.map((src, index) =>
+                index === featuredIndex ? url : src,
+              ),
+            );
+          }}
+        />
+      ) : null}
+
       <label className="field">
         <span>{t.title}</span>
         <input name="title" required maxLength={80} />
@@ -151,11 +249,13 @@ export function SellForm() {
         ) : null}
       </div>
       <label className="field">
-        <span>{t.price} ({t.lek})</span>
+        <span>
+          {t.price} ({t.lek})
+        </span>
         <input name="priceAll" type="number" min="100" step="50" required />
       </label>
       {error ? <p className="text-sm text-tangerine">{error}</p> : null}
-      <button className="btn btn-tangerine" disabled={pending}>
+      <button className="btn btn-tangerine" disabled={pending || uploading}>
         {pending ? t.publishing : t.publish}
       </button>
     </form>
