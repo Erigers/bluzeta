@@ -96,6 +96,17 @@ export function SellForm() {
       <div className="field">
         <span>{t.photos}</span>
         <p className="text-sm text-muted">{t.featuredPhotoHint}</p>
+        <div className="rounded-2xl border border-line bg-card/60 px-4 py-3">
+          <p className="text-sm font-medium text-foreground">{t.photoTipsTitle}</p>
+          <ul className="mt-2 grid gap-1.5 text-sm text-muted">
+            {t.photoTips.map((tip) => (
+              <li key={tip} className="flex gap-2">
+                <span className="mt-[0.55em] size-1.5 shrink-0 rounded-full bg-blue" aria-hidden />
+                <span>{tip}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
         <input
           type="file"
           accept="image/*"

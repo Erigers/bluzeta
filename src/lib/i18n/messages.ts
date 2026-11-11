@@ -243,6 +243,14 @@ const sq = {
   setFeaturedPhoto: "Vendose si foto kryesore",
   featuredPhotoHint:
     "Shto deri në 6 foto. Prek një për ta bërë foton kryesore në listime.",
+  photoTipsTitle: "Si të duken fotot më mirë",
+  photoTips: [
+    "Fotografo sendin në dritë natyrale, pa flash të fortë.",
+    "Mbush kornizën: sendi në qendër, sa më afër, me pak hapësirë bosh.",
+    "Përdor sfond të thjeshtë (mur, dyshek, tavolinë) — pastaj mund ta bësh studio me mjetin tonë.",
+    "Shfaq gjendjen: detaje, etiketë, gërvishtje ose defekte në foto shtesë.",
+    "Shkarko foto të qarta (JPG/PNG); shmang screenshot-et ose foto të errëta/të turbullta.",
+  ],
   removePhoto: "Hiq foton",
   photoUploading: "Duke ngarkuar fotot…",
   photoEditTitle: "Ndrysho sfondin e fotos kryesore",
@@ -596,6 +604,14 @@ const en: typeof sq = {
   setFeaturedPhoto: "Set as featured photo",
   featuredPhotoHint:
     "Add up to 6 photos. Tap one to make it the featured photo in lists.",
+  photoTipsTitle: "How to make photos look best",
+  photoTips: [
+    "Shoot in natural light — avoid harsh flash.",
+    "Fill the frame: item centered, close-up, with little empty space.",
+    "Use a simple background (wall, bed, table) — you can turn it into a studio look with our tool.",
+    "Show condition: details, tags, scratches, or flaws in extra photos.",
+    "Upload clear JPG/PNG photos — skip screenshots or dark/blurry shots.",
+  ],
   removePhoto: "Remove photo",
   photoUploading: "Uploading photos…",
   photoEditTitle: "Change featured photo background",
@@ -1077,6 +1093,14 @@ const it: typeof sq = {
   setFeaturedPhoto: "Imposta come foto in evidenza",
   featuredPhotoHint:
     "Aggiungi fino a 6 foto. Tocca una per renderla la foto in evidenza nelle liste.",
+  photoTipsTitle: "Come far risultare meglio le foto",
+  photoTips: [
+    "Scatta con luce naturale, senza flash forte.",
+    "Riempi l’inquadratura: oggetto al centro, da vicino, con poco spazio vuoto.",
+    "Usa uno sfondo semplice (muro, letto, tavolo) — poi puoi creare uno studio con il nostro strumento.",
+    "Mostra lo stato: dettagli, etichette, graffi o difetti in foto extra.",
+    "Carica JPG/PNG nitidi — evita screenshot o foto scure/sfocate.",
+  ],
   removePhoto: "Rimuovi foto",
   photoUploading: "Caricamento foto…",
   photoEditTitle: "Cambia lo sfondo della foto in evidenza",
@@ -1560,6 +1584,14 @@ const tr: typeof sq = {
   setFeaturedPhoto: "Öne çıkan fotoğraf yap",
   featuredPhotoHint:
     "En fazla 6 fotoğraf ekle. Listelerde öne çıkan yapmak için birine dokun.",
+  photoTipsTitle: "Fotoğrafların en iyi görünmesi için",
+  photoTips: [
+    "Doğal ışıkta çek — sert flaş kullanma.",
+    "Kareyi doldur: ürün ortada, yakından, az boş alanla.",
+    "Sade bir arka plan kullan (duvar, yatak, masa) — sonra aracımızla stüdyo görünümü verebilirsin.",
+    "Durumu göster: detaylar, etiket, çizik veya kusurlar için ek fotoğraflar ekle.",
+    "Net JPG/PNG yükle — ekran görüntüsü veya karanlık/bulanık fotoğraflardan kaçın.",
+  ],
   removePhoto: "Fotoğrafı kaldır",
   photoUploading: "Fotoğraflar yükleniyor…",
   photoEditTitle: "Öne çıkan fotoğrafın arka planını değiştir",
